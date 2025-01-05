@@ -6,24 +6,17 @@ on:
   pull_request:
     branches: [ master, dev ]
 
-env:
-  LLVM_RELEASE_VERSION_WINDOWS: 18
-  LLVM_RELEASE_VERSION_MAC: 17
-  LLVM_RELEASE_VERSION_LINUX: 17
-  LLVM_RELEASE_VERSION_UBUNTU20: 17
-  LLVM_DEV_VERSION: 20
 jobs:
-  
   build-nix:
     runs-on: ubuntu-latest
     strategy:
       # Don't abort runners if a single one fails
+      
       fail-fast: false
       matrix:
         build_type: [ Release, Debug ]
     steps:
       - uses: actions/checkout@v4
-      
       - uses: cachix/install-nix-action@v30
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
