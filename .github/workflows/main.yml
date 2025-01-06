@@ -15,6 +15,11 @@ env:
 jobs:
   build-nix-lock:
     runs-on: ubuntu-latest
+    strategy:
+      # Don't abort runners if a single one fails
+      fail-fast: false
+      matrix:
+        build_type: [ Release, Debug ]
     steps:
     - uses: actions/checkout@v4
     - name: Install Nix
@@ -22,10 +27,15 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Print flake information
-      run: nix flake info
-    - run: nix build
-    - run: nix flake check
+    - run: nix flake info
+
+    - name: Build 
+      run: |
+        if [[ ${{ matrix.build_type }} = "Debug" ]]; then 
+          nix build -L ".#c3c-debug-checks" 
+        else 
+          nix build -L ".#c3c-checks"
+        fi
 
   build-nix-latest:
     runs-on: ubuntu-latest
@@ -41,17 +51,15 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Update flake
-      run: | 
-        nix flake update
-        nix flake info
+    - run: nix flake update
+    - run: nix flake info
 
     - name: Build 
       run: |
         if [[ ${{ matrix.build_type }} = "Debug" ]]; then 
-          nix build ".#c3c-debug-checks" 
+          nix build -L ".#c3c-debug-checks" 
         else 
-          nix build ".#c3c-checks"
+          nix build -L ".#c3c-checks"
         fi
 
   # build-msvc:
