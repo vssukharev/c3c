@@ -14,7 +14,7 @@ env:
   LLVM_DEV_VERSION: 20
 
 jobs:
-  build-nix-lock:
+  build-nix:
     runs-on: ubuntu-latest
     strategy:
       # Don't abort runners if a single one fails
