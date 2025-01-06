@@ -12,6 +12,7 @@ env:
   LLVM_RELEASE_VERSION_LINUX: 17
   LLVM_RELEASE_VERSION_UBUNTU20: 17
   LLVM_DEV_VERSION: 20
+
 jobs:
   build-nix-lock:
     runs-on: ubuntu-latest
@@ -20,41 +21,23 @@ jobs:
       fail-fast: false
       matrix:
         build_type: [ Release, Debug ]
+        nixpkgs: [ Lock, Latest ]
     steps:
     - uses: actions/checkout@v4
+
     - name: Install Nix
       uses: cachix/install-nix-action@v30
-      with:
+      with: 
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - run: nix flake info
-
-    - name: Build 
+    - name: Update flake (if necessary)
       run: |
-        if [[ ${{ matrix.build_type }} = "Debug" ]]; then 
-          nix build -L ".#c3c-debug-checks" 
-        else 
-          nix build -L ".#c3c-checks"
+        if [[ matrix.nixpkgs == "Latest" ]]; then 
+          nix flake update
         fi
+        nix flake info
 
-  build-nix-latest:
-    runs-on: ubuntu-latest
-    strategy:
-      # Don't abort runners if a single one fails
-      fail-fast: false
-      matrix:
-        build_type: [ Release, Debug ]
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Nix
-      uses: cachix/install-nix-action@v30
-      with:
-        github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-    - run: nix flake update
-    - run: nix flake info
-
-    - name: Build 
+    - name: Build and check 
       run: |
         if [[ ${{ matrix.build_type }} = "Debug" ]]; then 
           nix build -L ".#c3c-debug-checks" 
